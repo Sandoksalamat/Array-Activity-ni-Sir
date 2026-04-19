@@ -17,17 +17,19 @@ public class Main {
         String dayLabels[] =        {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday"};
         String timeLabels[] =       {"6:00 AM", "9:00 AM", "12:00 PM", "3:00 PM", "6:00 PM"};
 
-        String scheduleGrid[][] =   {{"6:00 AM FREE",    "9:00 AM BLOCKED", "12:00 PM BLOCKED", "3:00 PM FREE",     "6:00 PM FREE"},
-                                     {"6:00 AM BLOCKED", "9:00 AM FREE",    "12:00 PM FREE",    "3:00 PM FREE",     "6:00 PM BLOCKED"},
-                                     {"6:00 AM FREE",    "9:00 AM FREE",    "12:00 PM BLOCKED", "3:00 PM FREE",     "6:00 PM FREE"},
-                                     {"6:00 AM FREE",    "9:00 AM BLOCKED", "12:00 PM FREE",    "3:00 PM BLOCKED",  "6:00 PM FREE"},
-                                     {"6:00 AM BLOCKED", "9:00 AM FREE",    "12:00 PM FREE",    "3:00 PM FREE",     "6:00 PM BLOCKED"}};
+        String slotStatus[][] = {{"FREE",    "BLOCKED", "BLOCKED", "FREE",    "FREE"}, 
+                                {"BLOCKED", "FREE",    "FREE",    "FREE",    "BLOCKED"}, 
+                                {"FREE",    "FREE",    "BLOCKED", "FREE",    "FREE"},   
+                                {"FREE",    "BLOCKED", "FREE",    "BLOCKED", "FREE"},   
+                                {"BLOCKED", "FREE",    "FREE",    "FREE",    "BLOCKED"}};  
+                            
 
-        String slotStatus[][] =     {{"FREE",       "BLOCKED",  "BLOCKED",  "FREE",     "FREE"},
-                                     {"BLOCKED",    "FREE",     "FREE",     "FREE",     "BLOCKED"},
-                                     {"FREE",       "FREE",     "BLOCKED",  "FREE",     "FREE"},
-                                     {"FREE",       "BLOCKED",  "FREE",     "BLOCKED",  "FREE"},
-                                     {"BLOCKED",    "FREE",     "FREE",     "FREE",     "BLOCKED"}};
+        String scheduleGrid[][] = new String[dayLabels.length][timeLabels.length];
+        for (int i = 0; i < dayLabels.length; i++) {
+            for (int j = 0; j < timeLabels.length; j++) {
+                scheduleGrid[i][j] = timeLabels[j] + " " + slotStatus[i][j];
+            }
+        }
 
         double rates[] =        {200.0, 350.0, 150.0, 250.0};
         double amountDue[] =    new double[5];
@@ -69,9 +71,24 @@ public class Main {
                             continue;
                         }
 
-                        System.out.println("Enter desired slot (1-5): ");
-                        customerSlots[i] = sc.nextInt();
-                        sc.nextLine();
+                        boolean slotIdTaken = false;
+                        do {
+                            System.out.println("Enter desired slot (1-5): ");
+                            customerSlots[i] = sc.nextInt();
+                            sc.nextLine();
+
+                            slotIdTaken = false;
+                                for (int k = 0; k < customerName.length; k++) {
+                                    if (k != i && customerName[k] != null && customerSlots[k] == customerSlots[i]) {
+                                        slotIdTaken = true;
+                                        break;
+                                    }
+                                }
+
+                                if (slotIdTaken) {
+                                    System.out.println("Slot " + customerSlots[i] + " is already taken by another customer. Please choose another.");
+                                    }
+                                } while (slotIdTaken);
 
                         switch (services[i]) {
                             case "TUTORIAL":
@@ -96,12 +113,30 @@ public class Main {
                                 break;
                         }
 
-                        System.out.println("Select Booking Slot (1-5):");
-                        bookingids[i] = sc.nextInt();
-                        sc.nextLine();
 
+                        boolean bookingSlotTaken = false;
+                        int chosenBookSlot = 0;
 
-                
+                        do {
+                            System.out.println("Select Booking Slot (1-5): ");
+                            chosenBookSlot = sc.nextInt();
+                            sc.nextLine();
+
+                            bookingSlotTaken = false;
+                            for (int k = 0; k < customerName.length; k++) {
+                                if (k != i && bookingids[k] == chosenBookSlot && customerName[k] != null) {
+                                    bookingSlotTaken = true;
+                                    break;
+                                }
+                            }
+
+                            if (bookingSlotTaken) {
+                                System.out.println("Booking slot " + chosenBookSlot + " is already taken by another customer. Please choose another.");
+                            }
+                        } while (bookingSlotTaken);
+
+                        bookingids[i] = chosenBookSlot;
+
                         System.out.println("------------------------------");
                         System.out.println("Booking saved for customer " + (i + 1) + ":");
                         System.out.println("Name         : " + customerName[i]);
@@ -132,19 +167,23 @@ public class Main {
                 case 2:
                     System.out.println("=====< AVAILABLE SCHEDULE >=====");
                     for (int i = 0; i < dayLabels.length; i++) {
-                        System.out.println("--- " + dayLabels[i] + " ---");
+                        System.out.println("---< " + dayLabels[i] + " >---");
                         for (int j = 0; j < scheduleGrid[i].length; j++) {
-                            System.out.println("  " + scheduleGrid[i][j]);
+                            System.out.println("  " + (j + 1) + ". " + scheduleGrid[i][j]);
                         }
                     }
                     System.out.println("================================");
                     break;
 
                 case 3:
+
+                if (customerName != null && customerSlots != null) {
                     System.out.println("Enter Booking ID to reserve a slot: ");
                     int bookIDSlot = sc.nextInt();
+                    sc.nextLine(); 
 
                     boolean idFound = false;
+                    
                     for (int i = 0; i < bookingids.length; i++) {
                         if (bookingids[i] == bookIDSlot) {
                             idFound = true;
@@ -162,15 +201,18 @@ public class Main {
                         System.out.println((i + 1) + " = " + dayLabels[i]);
                     }
                     int dayChoice = sc.nextInt() - 1;
+                    sc.nextLine();
 
                     System.out.println("Select a time:");
                     for (int i = 0; i < timeLabels.length; i++) {
                         System.out.println((i + 1) + " = " + timeLabels[i]);
                     }
                     int timeChoice = sc.nextInt() - 1;
+                    sc.nextLine(); 
 
-                    System.out.println("Enter slot number to reserve (1-" + slotStatus[0].length + "): ");
+                    System.out.println("Enter slot number to reserve (1-" + slotStatus[dayChoice].length + "): ");
                     int reserveSlot = sc.nextInt();
+                    sc.nextLine(); 
 
                     try {
                         int slotIdx = reserveSlot - 1;
@@ -181,14 +223,16 @@ public class Main {
                         switch (currentSlotStatus) {
                             case "FREE":
                                 slotStatus[dayChoice][slotIdx] = "RESERVED";
+                                scheduleGrid[dayChoice][slotIdx] = timeLabels[slotIdx] + " RESERVED";
                                 slotindex = new int[bookingids.length];
                                 slotindex[bookIDSlot - 1] = slotIdx;
+                                slots[bookIDSlot - 1] = reserveSlot; 
 
                                 System.out.println("Slot " + reserveSlot + " successfully reserved.");
                                 System.out.println("Booking ID  : " + bookIDSlot);
-                                System.out.println("Day         : " + chosenDay); 
+                                System.out.println("Day         : " + chosenDay);
                                 System.out.println("Time        : " + chosenTime);
-                                System.out.println("Slot Index  : " + slotIdx);
+                                System.out.println("Slot Number : " + reserveSlot);
                                 System.out.println("Slot Status : " + slotStatus[dayChoice][slotIdx]);
                                 break;
                             case "RESERVED":
@@ -204,7 +248,11 @@ public class Main {
                         System.out.println("Invalid input. Check day, time, or slot range.");
                     }
                     break;
-
+                } else {
+                    System.out.println("Add customer before reserving.");
+                    break;
+                }
+                
                 case 4:
                     System.out.println("Enter customer number to compute bill (1-5): ");
                     int custIndex = sc.nextInt() - 1;
@@ -250,6 +298,7 @@ public class Main {
                             System.out.println("No booking found for customer " + (payIndex + 1));
                             break;
                         }
+
                         if (bills[payIndex] == 0.0) {
                             System.out.println("No bill computed for customer " + (payIndex + 1) + ". Please compute bill first (Case 4).");
                             break;
@@ -324,6 +373,7 @@ public class Main {
                 case 7:
                     System.out.println("Select customer number to Update or Cancel booking (1-5): ");
                     int updateCustomer = sc.nextInt() - 1;
+                    sc.nextLine();
 
                     try {
                         if (customerName[updateCustomer] == null) {
@@ -333,17 +383,19 @@ public class Main {
 
                         System.out.println("Customer  : " + customerName[updateCustomer]);
                         System.out.println("Service   : " + services[updateCustomer]);
-                        System.out.println("Slot      : " + slots[updateCustomer]);
+                        System.out.println("Slot      : " + customerSlots[updateCustomer]); 
                         System.out.println("Status    : " + status[updateCustomer]);
 
-                        System.out.println("1 = Update Service | 2 = Update Slot | 3 = Update Status | 4 = Cancel Booking");
+                        System.out.println("1 = Update Service | 2 = Update Slot | 3 = Cancel Booking");
                         int updateChoice = sc.nextInt();
+                        sc.nextLine();
 
                         switch (updateChoice) {
                             case 1:
                                 System.out.println("Current Service: " + services[updateCustomer]);
                                 System.out.println("Enter new Service (TUTORIAL / REPAIR / RENTAL / CLEANING): ");
                                 String newService = sc.next().toUpperCase();
+                                sc.nextLine();
 
                                 serviceValid = false;
                                 for (int i = 0; i < serviceTypes.length; i++) {
@@ -360,12 +412,13 @@ public class Main {
 
                                 System.out.println("Confirm update from " + services[updateCustomer] + " to " + newService + "? 1 = Yes | 2 = No");
                                 int confirmService = sc.nextInt();
+                                sc.nextLine();
 
                                 if (confirmService == 1) {
-                                    services[updateCustomer] = newService;
-                                    bills[updateCustomer]     = 0.0;
+                                    services[updateCustomer]   = newService;
+                                    bills[updateCustomer]      = 0.0;
                                     amountPaid[updateCustomer] = 0.0;
-                                    status[updateCustomer]    = "RESERVED";
+                                    status[updateCustomer]     = "RESERVED";
                                     System.out.println("Service updated to: " + services[updateCustomer]);
                                     System.out.println("[NOTE]: Recompute bill (Case 4) and re-record payment (Case 5).");
                                 } else {
@@ -374,26 +427,29 @@ public class Main {
                                 break;
 
                             case 2:
-                                System.out.println("Current Slot: " + slots[updateCustomer]);
+                                System.out.println("Current Slot: " + customerSlots[updateCustomer]); 
                                 System.out.println("Select a day:");
                                 for (int i = 0; i < dayLabels.length; i++) {
                                     System.out.println((i + 1) + " = " + dayLabels[i]);
                                 }
                                 int newDayChoice = sc.nextInt() - 1;
+                                sc.nextLine();
 
                                 System.out.println("Select a time:");
                                 for (int i = 0; i < timeLabels.length; i++) {
                                     System.out.println((i + 1) + " = " + timeLabels[i]);
                                 }
                                 int newTimeChoice = sc.nextInt() - 1;
+                                sc.nextLine();
 
                                 try {
                                     String newChosenDay  = dayLabels[newDayChoice];
-                                    String newChosenTime = timeLabels[newTimeChoice]; // FIXED: was showing index
+                                    String newChosenTime = timeLabels[newTimeChoice];
 
                                     System.out.println("Enter new slot number (1-" + slotStatus[newDayChoice].length + "): ");
                                     int newSlot    = sc.nextInt();
                                     int newSlotIdx = newSlot - 1;
+                                    sc.nextLine();
 
                                     try {
                                         String newSlotStatus = slotStatus[newDayChoice][newSlotIdx];
@@ -403,14 +459,21 @@ public class Main {
                                             break;
                                         }
 
-                                        System.out.println("Confirm update from slot " + slots[updateCustomer] + " to slot " + newSlot + " on " + newChosenDay + ", " + newChosenTime + "? 1 = Yes | 2 = No");
+                                        System.out.println("Confirm update from slot " + customerSlots[updateCustomer] + " to slot " + newSlot + " on " + newChosenDay + ", " + newChosenTime + "? 1 = Yes | 2 = No"); 
                                         int confirmSlot = sc.nextInt();
+                                        sc.nextLine();
 
                                         if (confirmSlot == 1) {
-                                            slotStatus[newDayChoice][slots[updateCustomer] - 1] = "FREE";
+                                       
+                                            slotStatus[newDayChoice][customerSlots[updateCustomer] - 1] = "FREE"; 
+                                            scheduleGrid[newDayChoice][customerSlots[updateCustomer] - 1] = timeLabels[customerSlots[updateCustomer] - 1] + " FREE"; 
+
+                                            
                                             slotStatus[newDayChoice][newSlotIdx] = "RESERVED";
-                                            slots[updateCustomer] = newSlot;
-                                            System.out.println("Slot updated to: " + slots[updateCustomer] + " on " + newChosenDay + ", " + newChosenTime);
+                                            scheduleGrid[newDayChoice][newSlotIdx] = timeLabels[newSlotIdx] + " RESERVED";
+
+                                            customerSlots[updateCustomer] = newSlot; 
+                                            System.out.println("Slot updated to: " + customerSlots[updateCustomer] + " on " + newChosenDay + ", " + newChosenTime);
                                         } else {
                                             System.out.println("Update cancelled.");
                                         }
@@ -425,15 +488,20 @@ public class Main {
                             case 3:
                                 System.out.println("Are you sure you want to CANCEL booking for " + customerName[updateCustomer] + "? 1 = Yes | 2 = No");
                                 int confirmCancel = sc.nextInt();
+                                sc.nextLine();
 
                                 if (confirmCancel == 1) {
-                                    customerName[updateCustomer]   = null;
-                                    services[updateCustomer]       = null;
-                                    slots[updateCustomer]          = 0;
-                                    hoursOrunits[updateCustomer]   = 0;
-                                    bills[updateCustomer]          = 0.0;
-                                    amountPaid[updateCustomer]     = 0.0;
-                                    status[updateCustomer]         = "CANCELLED";
+                  
+                                    slotStatus[0][customerSlots[updateCustomer] - 1] = "FREE"; 
+                                    scheduleGrid[0][customerSlots[updateCustomer] - 1] = timeLabels[customerSlots[updateCustomer] - 1] + " FREE"; 
+
+                                    customerName[updateCustomer]  = null;
+                                    services[updateCustomer]      = null;
+                                    customerSlots[updateCustomer] = 0; 
+                                    hoursOrunits[updateCustomer]  = 0;
+                                    bills[updateCustomer]         = 0.0;
+                                    amountPaid[updateCustomer]    = 0.0;
+                                    status[updateCustomer]        = "CANCELLED";
                                     System.out.println("Booking for customer " + (updateCustomer + 1) + " has been CANCELLED.");
                                 } else {
                                     System.out.println("Cancellation aborted.");
@@ -468,6 +536,7 @@ public class Main {
                                     System.out.println("Customer Name : " + customerName[i]);
                                     System.out.println("Service       : " + services[i]);
                                     System.out.println("Slot          : " + customerSlots[i]);
+                                    System.out.println("Reserved Slot : " + slots[i]);
                                     System.out.println("Hours/Units   : " + hoursOrunits[i]);
                                     System.out.println("Amount Due    : PHP " + bills[i]);
                                     System.out.println("Amount Paid   : PHP " + amountPaid[i]);
